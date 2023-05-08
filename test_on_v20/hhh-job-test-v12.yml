@@ -1,0 +1,60 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: hhh-job-test-v12-on-v20
+  labels:
+    jobgroup: hhh-job-test
+spec:
+  template:
+    spec:
+      containers:
+      - name: testing
+        image: gitlab-registry.nrp-nautilus.io/jmduarte/hhh:latest
+        command:
+        - "/bin/bash"
+        args:
+        - "-c"
+        - "python -m spanet.test /hhh-vol/logs/v12_kubesm_output/version_0 -tf /hhh-vol/data/cms/v20-random-seed/hhh_testing.h5 &> /hhh-vol/txt_logs/Billy/033123/v12_on_v20.log"
+          #args:
+          # - "-m"
+          #- "spanet.test"
+          #- "/hhh-vol/logs/v12_kubesm_output/version_0"
+          #- -tf
+          #- "/hhh-vol/data/cms/v20-random-seed/hhh_testing.h5"
+          #- "&> /hhh-vol/txt_logs/Billy/033123/v12_on_v20.log"
+        volumeMounts:
+        - mountPath: /hhh-vol
+          name: hhh-vol
+        - name: git-repo
+          mountPath: /opt/repo
+        resources:
+          limits:
+            memory: 32Gi
+            cpu: "8"
+            nvidia.com/gpu: "1"
+          requests:
+            memory: 16Gi
+            cpu: "4"
+            nvidia.com/gpu: "1"
+      initContainers:
+      - name: init-clone-repo
+        image: alpine/git
+        args:
+          - clone
+          - --single-branch
+          - https://github.com/ucsd-hep-ex/hhh
+          - -b
+          - main
+          - --recurse-submodules
+          - /opt/repo/hhh
+        volumeMounts:
+          - name: git-repo
+            mountPath: /opt/repo
+      volumes:
+      - name: git-repo
+        emptyDir: {}
+      - name: hhh-vol
+        persistentVolumeClaim:
+          claimName: hhh-vol
+      restartPolicy: Never
+  backoffLimit: 5
