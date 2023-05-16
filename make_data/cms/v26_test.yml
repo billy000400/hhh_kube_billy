@@ -1,0 +1,34 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: hhh-cms-test-data-v26
+  labels:
+    app: hhh
+spec:
+  containers:
+  - name: container
+    image: gitlab-registry.nrp-nautilus.io/jmduarte/hhh:latest
+    command: 
+      - "/bin/bash"
+      - "-c"
+      - >
+        cd /hhh-vol/hhh/ &&
+        pip install -e . &&
+        python -m src.data.cms.convert_to_h5 --out-file /hhh-vol/data/cms/v26/hhh_test.h5 /hhh-vol/data/cms/v26/*.root
+    resources:
+      limits:
+        memory: 32Gi
+        cpu: "8"
+        nvidia.com/gpu: "1"
+      requests:
+        memory: 16Gi
+        cpu: "4"
+        nvidia.com/gpu: "1"
+    volumeMounts:
+    - mountPath: /hhh-vol
+      name: hhh-vol
+  volumes:
+    - name: hhh-vol
+      persistentVolumeClaim:
+        claimName: hhh-vol
+  restartPolicy: Never
