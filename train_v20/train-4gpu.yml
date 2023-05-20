@@ -25,7 +25,7 @@ spec:
             - "-m"
             - "spanet.train"
             - -of
-            - "/hhh-vol/options_files/hhh_v20_default.json"
+            - "/hhh-vol/options_files/cms/hhh_v20_4gpu.json"
             - -l
             - "/hhh-vol/logs/"
             - -n
@@ -43,11 +43,11 @@ spec:
               mountPath: /opt/repo
           resources:
             limits:
-              memory: 16Gi
+              memory: 32Gi
               cpu: "8"
               nvidia.com/gpu: "4"
             requests:
-              memory: 16Gi
+              memory: 32Gi
               cpu: "8"
               nvidia.com/gpu: "4"
       initContainers:

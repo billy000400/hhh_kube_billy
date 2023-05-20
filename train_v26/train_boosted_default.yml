@@ -41,12 +41,12 @@ spec:
               mountPath: /opt/repo
           resources:
             limits:
-              memory: 16Gi
+              memory: 32Gi
               cpu: "8"
               nvidia.com/gpu: "1"
             requests:
-              memory: 8Gi
-              cpu: "4"
+              memory: 32Gi
+              cpu: "8"
               nvidia.com/gpu: "1"
       initContainers:
         - name: init-clone-repo

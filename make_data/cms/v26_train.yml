@@ -19,11 +19,9 @@ spec:
       limits:
         memory: 32Gi
         cpu: "8"
-        nvidia.com/gpu: "1"
       requests:
         memory: 32Gi
         cpu: "4"
-        nvidia.com/gpu: "1"
     volumeMounts:
     - mountPath: /hhh-vol
       name: hhh-vol
