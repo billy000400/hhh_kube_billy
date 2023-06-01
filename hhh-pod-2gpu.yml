@@ -39,7 +39,13 @@ spec:
     volumeMounts:
     - mountPath: /hhh-vol
       name: hhh-vol
+    - mountPath: /dev/shm
+      name: dshm
   volumes:
     - name: hhh-vol
       persistentVolumeClaim:
         claimName: hhh-vol
+    - name: dshm
+      emptyDir:
+        medium: Memory
+        sizeLimit: 8Gi
