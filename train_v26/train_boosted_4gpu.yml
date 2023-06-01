@@ -19,21 +19,10 @@ spec:
       containers:
         - name: training
           image: gitlab-registry.nrp-nautilus.io/jmduarte/hhh:latest
-          command:
-            - "python"
+          command: ["/bin/sh","-c"]
           args:
-            - "-m"
-            - "spanet.train"
-            - -of
-            - "/hhh-vol/options_files/cms/hhh_v26_boosted.json"
-            - -l
-            - "/hhh-vol/logs/"
-            - -n
-            - "bv26"
-            - --epochs
-            - "2000"
-            - --gpus
-            - "4"
+            - cd /hhh-vol &&
+              python -m spanet.train -of options_files/cms/hhh_v26_boosted_4gpu.json -l /hhh-vol/logs/ -n bv26 --epochs 2000 --gpus 4
           volumeMounts:
             - name: dshm
               mountPath: /dev/shm
