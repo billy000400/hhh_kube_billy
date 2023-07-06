@@ -29,12 +29,12 @@ spec:
        sleep 36500000
     resources:
       limits:
-        memory: 32Gi
-        cpu: "8"
+        memory: 16Gi
+        cpu: "4"
         nvidia.com/gpu: "1"
       requests:
-        memory: 32Gi
-        cpu: "8"
+        memory: 16Gi
+        cpu: "4"
         nvidia.com/gpu: "1"
     volumeMounts:
     - mountPath: /hhh-vol
