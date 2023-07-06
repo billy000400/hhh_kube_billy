@@ -5,6 +5,15 @@ metadata:
   labels:
     app: hhh
 spec:
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: nvidia.com/gpu.product
+            operator: In
+            values:
+            - NVIDIA-GeForce-RTX-3090
   containers:
   - name: container
     image: gitlab-registry.nrp-nautilus.io/jmduarte/hhh:latest
@@ -30,7 +39,13 @@ spec:
     volumeMounts:
     - mountPath: /hhh-vol
       name: hhh-vol
+    - mountPath: /dev/shm
+      name: dshm
   volumes:
     - name: hhh-vol
       persistentVolumeClaim:
         claimName: hhh-vol
+    - name: dshm
+      emptyDir:
+        medium: Memory
+        sizeLimit: 8Gi
