@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: hhh-pod-billy-test
+  name: hhh-pod-billy
   labels:
     app: hhh
 spec:
