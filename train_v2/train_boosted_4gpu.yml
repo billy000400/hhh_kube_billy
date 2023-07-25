@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: hhh-job-train-v20-billy-default
+  name: hhh-job-train-bv2-billy-4gpu
   labels:
     jobgroup: hhh-job-train
 spec:
@@ -19,19 +19,10 @@ spec:
       containers:
         - name: training
           image: gitlab-registry.nrp-nautilus.io/jmduarte/hhh:latest
-          command:
-            - "python"
+          command: ["/bin/sh","-c"]
           args:
-            - "-m"
-            - "spanet.train"
-            - -of
-            - "/hhh-vol/options_files/hhh_v20_default.json"
-            - -l
-            - "/hhh-vol/logs/"
-            - -n
-            - "v20_output"
-            - --epochs
-            - "2000"
+            - cd /hhh-vol &&
+              python -m spanet.train -of options_files/delphes/hhh_v2_boosted.json -l /hhh-vol/logs/ -n bv2 --epochs 2000 --gpus 4
           volumeMounts:
             - name: dshm
               mountPath: /dev/shm
@@ -41,13 +32,13 @@ spec:
               mountPath: /opt/repo
           resources:
             limits:
-              memory: 16Gi
+              memory: 32Gi
               cpu: "8"
-              nvidia.com/gpu: "1"
+              nvidia.com/gpu: "4"
             requests:
-              memory: 8Gi
-              cpu: "4"
-              nvidia.com/gpu: "1"
+              memory: 32Gi
+              cpu: "8"
+              nvidia.com/gpu: "4"
       initContainers:
         - name: init-clone-repo
           image: alpine/git
