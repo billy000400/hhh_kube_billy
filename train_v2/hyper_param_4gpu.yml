@@ -22,7 +22,8 @@ spec:
           command: ["/bin/sh","-c"]
           args:
             - cd /hhh-vol &&
-              python -m spanet.tune /hhh-vol/options_files/delphes/hhh_v2_boosted.json -g 4 -e 400 -t 100 -l bv2_tune -n bv2
+              pip install ray &&
+              python -m spanet.tune /hhh-vol/options_files/delphes/hhh_v2_boosted.json -g 4 -e 400 -t 10 -l bv2_tune -n bv2
           volumeMounts:
             - name: dshm
               mountPath: /dev/shm
