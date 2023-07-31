@@ -23,7 +23,7 @@ spec:
           args:
             - cd /hhh-vol &&
               pip install ray &&
-              python -m spanet.tune /hhh-vol/options_files/delphes/hhh_v2_boosted.json -g 4 -e 400 -t 10 -l bv2_tune -n bv2
+              python -m spanet.tune /hhh-vol/options_files/delphes/hhh_v2_boosted.json -g 4 -e 100 -t 5 -l bv2_tune -n bv2
           volumeMounts:
             - name: dshm
               mountPath: /dev/shm
@@ -58,7 +58,7 @@ spec:
         - name: dshm
           emptyDir:
             medium: Memory
-            sizeLimit: 8Gi
+            sizeLimit: 64Gi
         - name: git-repo
           emptyDir: {}
         - name: hhh-vol
