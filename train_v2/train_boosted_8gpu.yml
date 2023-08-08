@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: hhh-job-train-bv2-billy-4gpu
+  name: hhh-job-train-bv2-billy-8gpu
   labels:
     jobgroup: hhh-job-train
 spec:
@@ -21,7 +21,9 @@ spec:
           image: gitlab-registry.nrp-nautilus.io/jmduarte/hhh:latest
           command: ["/bin/sh","-c"]
           args:
-            - cd /hhh-vol &&
+            - cd /opt/repo/SPANet &&
+              pip install -e .
+              cd /hhh-vol &&
               python -m spanet.train -of options_files/delphes/hhh_v2_boosted_best1.json -l /hhh-vol/logs/ -n bv2 --epochs 2000 --gpus 8
           volumeMounts:
             - name: dshm
@@ -33,23 +35,22 @@ spec:
           resources:
             limits:
               memory: 32Gi
-              cpu: "8"
-              nvidia.com/gpu: "4"
+              cpu: "16"
+              nvidia.com/gpu: "8"
             requests:
               memory: 32Gi
-              cpu: "8"
-              nvidia.com/gpu: "4"
+              cpu: "16"
+              nvidia.com/gpu: "8"
       initContainers:
         - name: init-clone-repo
           image: alpine/git
           args:
             - clone
             - --single-branch
-            - https://github.com/ucsd-hep-ex/hhh
+            - https://github.com/billy000400/SPANet
             - -b
-            - main
-            - --recurse-submodules
-            - /opt/repo/hhh
+            - master
+            - /opt/repo/SPANet
           volumeMounts:
             - name: git-repo
               mountPath: /opt/repo
