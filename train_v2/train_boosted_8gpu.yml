@@ -22,7 +22,7 @@ spec:
           command: ["/bin/sh","-c"]
           args:
             - cd /opt/repo/SPANet &&
-              pip install -e .
+              pip install -e . &&
               cd /hhh-vol &&
               python -m spanet.train -of options_files/delphes/hhh_v2_boosted_best1.json -l /hhh-vol/logs/ -n bv2 --epochs 2000 --gpus 8 --batch_size 4096
           volumeMounts:
