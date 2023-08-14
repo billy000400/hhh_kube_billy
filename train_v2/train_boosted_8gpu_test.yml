@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: hhh-job-train-bv2-billy-8gpu
+  name: hhh-job-train-bv2-billy-8gpu-test
   labels:
     jobgroup: hhh-job-train
 spec:
@@ -12,19 +12,20 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
             - matchExpressions:
-              - key: nvidia.com/gpu.product
-                operator: In
+              - key: nvidia.com/gpu.product  
+                operator: NotIn
                 values:
-                - NVIDIA-GeForce-RTX-3090
+                - NVIDIA-A100-80GB-PCIe-MIG-1g.10gb 
       containers:
         - name: training
           image: gitlab-registry.nrp-nautilus.io/jmduarte/hhh:latest
           command: ["/bin/sh","-c"]
           args:
-            - cd /opt/repo/SPANet &&
+            - cp -r /opt/repo/SPANet . &&
+              cd SPANet &&
               pip install -e . &&
               cd /hhh-vol &&
-              python -m spanet.train -of options_files/delphes/hhh_v2_boosted_best1.json -l /hhh-vol/logs/ -n bv2 --epochs 2000 --gpus 8 --batch_size 4096
+              sleep 24h
           volumeMounts:
             - name: dshm
               mountPath: /dev/shm
@@ -34,12 +35,12 @@ spec:
               mountPath: /opt/repo
           resources:
             limits:
-              memory: 32Gi
-              cpu: "16"
+              memory: 64Gi
+              cpu: "48"
               nvidia.com/gpu: "8"
             requests:
-              memory: 32Gi
-              cpu: "16"
+              memory: 64Gi
+              cpu: "48"
               nvidia.com/gpu: "8"
       initContainers:
         - name: init-clone-repo
@@ -50,6 +51,7 @@ spec:
             - https://github.com/billy000400/SPANet
             - -b
             - master
+            - --recurse-submodules
             - /opt/repo/SPANet
           volumeMounts:
             - name: git-repo
@@ -58,7 +60,7 @@ spec:
         - name: dshm
           emptyDir:
             medium: Memory
-            sizeLimit: 8Gi
+            sizeLimit: 32Gi
         - name: git-repo
           emptyDir: {}
         - name: hhh-vol
