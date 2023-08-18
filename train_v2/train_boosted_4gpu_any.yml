@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: hhh-job-train-bv2-billy-4gpu-any
+  name: hhh-job-train-bv2-billy-4gpu-best
   labels:
     jobgroup: hhh-job-train
 spec:
@@ -25,7 +25,7 @@ spec:
               cd SPANet &&
               pip install -e . &&
               cd /hhh-vol &&
-              python -m spanet.train -of options_files/delphes/hhh_v2_boosted_best1.json -l /hhh-vol/logs/ -n bv2 --epochs 2000 --gpus 4 --batch_size 4096
+              python -m spanet.train -of /hhh-vol/tune/bv2/spanet_trial_9d9a0_00002_2_focal_gamma=0.8947,hidden_dim=64,l2_penalty=0.0016,learning_rate=0.0005,num_branch_embedding_layers=6,n_2023-08-15_17-17-31/hparams.json -l /hhh-vol/logs/ -n bv2 --epochs 2000 --gpus 4 --batch_size 4096
           volumeMounts:
             - name: dshm
               mountPath: /dev/shm

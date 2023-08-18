@@ -35,12 +35,12 @@ spec:
               mountPath: /opt/repo
           resources:
             limits:
-              memory: 64Gi
-              cpu: "48"
+              memory: 128Gi
+              cpu: "128"
               nvidia.com/gpu: "8"
             requests:
-              memory: 64Gi
-              cpu: "48"
+              memory: 128Gi
+              cpu: "128"
               nvidia.com/gpu: "8"
       initContainers:
         - name: init-clone-repo
@@ -60,7 +60,7 @@ spec:
         - name: dshm
           emptyDir:
             medium: Memory
-            sizeLimit: 32Gi
+            sizeLimit: 16Gi
         - name: git-repo
           emptyDir: {}
         - name: hhh-vol
