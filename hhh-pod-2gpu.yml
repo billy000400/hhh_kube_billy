@@ -29,12 +29,12 @@ spec:
        sleep 36500000
     resources:
       limits:
-        memory: 16Gi
-        cpu: "8"
+        memory: 32Gi
+        cpu: "16"
         nvidia.com/gpu: "2"
       requests:
-        memory: 16Gi
-        cpu: "8"
+        memory: 32Gi
+        cpu: "16"
         nvidia.com/gpu: "2"
     volumeMounts:
     - mountPath: /hhh-vol
@@ -48,4 +48,4 @@ spec:
     - name: dshm
       emptyDir:
         medium: Memory
-        sizeLimit: 8Gi
+        sizeLimit: 16Gi
