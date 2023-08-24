@@ -1,19 +1,10 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: hhh-pod-billy-2gpu
+  name: hhh-pod-billy-any
   labels:
     app: hhh
 spec:
-  affinity:
-    nodeAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-        - matchExpressions:
-          - key: nvidia.com/gpu.product
-            operator: In
-            values:
-            - NVIDIA-GeForce-RTX-3090
   containers:
   - name: container
     image: gitlab-registry.nrp-nautilus.io/jmduarte/hhh:latest
@@ -29,13 +20,13 @@ spec:
        sleep 36500000
     resources:
       limits:
-        memory: 32Gi
-        cpu: "16"
-        nvidia.com/gpu: "2"
+        memory: 16Gi
+        cpu: "4"
+        nvidia.com/gpu: "1"
       requests:
-        memory: 32Gi
-        cpu: "16"
-        nvidia.com/gpu: "2"
+        memory: 16Gi
+        cpu: "4"
+        nvidia.com/gpu: "1"
     volumeMounts:
     - mountPath: /hhh-vol
       name: hhh-vol
@@ -48,4 +39,4 @@ spec:
     - name: dshm
       emptyDir:
         medium: Memory
-        sizeLimit: 16Gi
+        sizeLimit: 8Gi

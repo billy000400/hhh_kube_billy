@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: hhh-job-test-v2-version-0
+  name: hhh-job-test-v2-version-22
   labels:
     jobgroup: hhh-job-test
 spec:
@@ -10,11 +10,10 @@ spec:
       containers:
       - name: testing
         image: gitlab-registry.nrp-nautilus.io/jmduarte/hhh:latest
-        command:
-        - "/bin/bash"
+        command: ["/bin/sh","-c"]
         args:
-        - "-c"
-        - "cd /hhh-vol && python -m spanet.test /hhh-vol/logs/bv2/version_0 -tf /hhh-vol/data/delphes/v2/hhh_test.h5"
+        - cd /hhh-vol &&
+          python -m spanet.test /hhh-vol/logs/bv2/version_22 -tf /hhh-vol/data/delphes/v2/hhh_test.h5 #&> /hhh-vol/txt_logs/Billy/081723/v2_22_on_v2.txt
           #args:
           # - "-m"
           #- "spanet.test"
