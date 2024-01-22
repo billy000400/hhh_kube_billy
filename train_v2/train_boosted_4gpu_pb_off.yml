@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: hhh-job-train-bv2-billy-4gpu
+  name: hhh-job-train-bv2-billy-pb-off
   labels:
     jobgroup: hhh-job-train
 spec:
@@ -12,7 +12,7 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
             - matchExpressions:
-              - key: nvidia.com/gpu.product
+              - key: nvidia.com/gpu.product  
                 operator: In
                 values:
                 - NVIDIA-GeForce-RTX-3090
@@ -21,8 +21,11 @@ spec:
           image: gitlab-registry.nrp-nautilus.io/jmduarte/hhh:latest
           command: ["/bin/sh","-c"]
           args:
-            - cd /hhh-vol &&
-              python -m spanet.train -of options_files/delphes/hhh_v2_boosted.json -l /hhh-vol/logs/ -n bv2 --epochs 2000 --gpus 4 --batch_size 4096
+            - cp -r /opt/repo/SPANet . &&
+              cd SPANet &&
+              pip install -e . &&
+              cd /hhh-vol &&
+              python -m spanet.train -of options_files/delphes/hhh_v2_boosted_pb_off.json -l /hhh-vol/logs/ -n bv2 --epochs 2000 --gpus 4 --batch_size 4096
           volumeMounts:
             - name: dshm
               mountPath: /dev/shm
@@ -45,11 +48,11 @@ spec:
           args:
             - clone
             - --single-branch
-            - https://github.com/ucsd-hep-ex/hhh
+            - https://github.com/billy000400/SPANet
             - -b
-            - main
+            - master
             - --recurse-submodules
-            - /opt/repo/hhh
+            - /opt/repo/SPANet
           volumeMounts:
             - name: git-repo
               mountPath: /opt/repo
@@ -57,7 +60,7 @@ spec:
         - name: dshm
           emptyDir:
             medium: Memory
-            sizeLimit: 8Gi
+            sizeLimit: 16Gi
         - name: git-repo
           emptyDir: {}
         - name: hhh-vol
