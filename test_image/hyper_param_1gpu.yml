@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: hhh-job-hyper-param-bv2-billy-1gpu
+  name: hhh-test-image-hyper-param
   labels:
     jobgroup: hhh-job-train
 spec:
@@ -18,10 +18,10 @@ spec:
                 - NVIDIA-GeForce-RTX-3090
       containers:
         - name: training
-          image: gitlab-registry.nrp-nautilus.io/jmduarte/hhh:latest
+          image: jmduarte/hhh:pytorch2
           command: ["/bin/sh","-c"]
           args:
-            - pip install ray && 
+            - cd /hhh-vol &&
               python -m spanet.tune /hhh-vol/options_files/delphes/hhh_v2_boosted_base.json -g 1 -e 100 -t 5 -l /hhh-vol/tune -n bv2
           volumeMounts:
             - name: dshm
@@ -39,20 +39,6 @@ spec:
               memory: 32Gi
               cpu: "8"
               nvidia.com/gpu: "1"
-      initContainers:
-        - name: init-clone-repo
-          image: alpine/git
-          args:
-            - clone
-            - --single-branch
-            - https://github.com/billy000400/SPANet
-            - -b
-            - master
-            - --recurse-submodules
-            - /opt/repo/SPANet
-          volumeMounts:
-            - name: git-repo
-              mountPath: /opt/repo
       volumes:
         - name: dshm
           emptyDir:

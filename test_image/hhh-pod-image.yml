@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: hhh-pod-billy
+  name: hhh-pod-billy-test-image
   labels:
     app: hhh
 spec:
@@ -16,25 +16,25 @@ spec:
             - NVIDIA-GeForce-RTX-3090
   containers:
   - name: container
-    image: gitlab-registry.nrp-nautilus.io/jmduarte/hhh:latest
+    image: billy000400/hhh:tune
     command: 
       - "/bin/bash"
       - "-c"
       - >
        git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim &&
-       curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim &&
+       mkdir -p ~/.vim/autoload/ &&
+       wget -O ~/.vim/autoload/plug.vim https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim &&
        git clone https://github.com/billy000400/vim &&
        cp vim/.vimrc ~/. && 
-       vi +PlugInstall +PluginInstall +qall &&
        sleep 36500000
     resources:
       limits:
-        memory: 32Gi
-        cpu: "8"
+        memory: 16Gi
+        cpu: "4"
         nvidia.com/gpu: "1"
       requests:
-        memory: 32Gi
-        cpu: "8"
+        memory: 16Gi
+        cpu: "4"
         nvidia.com/gpu: "1"
     volumeMounts:
     - mountPath: /hhh-vol
