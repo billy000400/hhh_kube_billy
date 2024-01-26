@@ -16,7 +16,7 @@ spec:
             - NVIDIA-GeForce-RTX-3090
   containers:
   - name: container
-    image: billy000400/hhh:tune
+    image: gitlab-registry.nrp-nautilus.io/billy000400/hhh:hparam
     command: 
       - "/bin/bash"
       - "-c"
@@ -26,6 +26,7 @@ spec:
        wget -O ~/.vim/autoload/plug.vim https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim &&
        git clone https://github.com/billy000400/vim &&
        cp vim/.vimrc ~/. && 
+       vi +PlugInstall +PluginInstall +qall &&
        sleep 36500000
     resources:
       limits:
