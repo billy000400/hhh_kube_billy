@@ -22,6 +22,7 @@ spec:
       - "run"
       - "-n"
       - "spanet"
+      - "--live-stream"
       - "/bin/bash"
       - "-c"
       - >
