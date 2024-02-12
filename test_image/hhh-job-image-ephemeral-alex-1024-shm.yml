@@ -1,0 +1,67 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: hhh-job-billy-test-image-ephemeral-alex-1024-shm
+  labels:
+    jobgroup: hhh-job-train
+spec:
+  template:
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: nvidia.com/gpu.product
+                operator: In
+                values:
+                - NVIDIA-A10
+      containers:
+        - name: training
+          image: billy000400/hhh:latest 
+          command:
+            - "conda"
+            - "run"
+            - "-n"
+            - "spanet"
+            - "--live-stream"
+            - "/bin/bash"
+            - "-c"
+            - >
+             git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim &&
+             mkdir -p ~/.vim/autoload/ &&
+             wget -O ~/.vim/autoload/plug.vim https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim &&
+             git clone https://github.com/billy000400/vim &&
+             cp vim/.vimrc ~/. && 
+             vi +PlugInstall +PluginInstall +qall &&
+             python -m spanet.tune /hhh-vol/options_files/delphes/hhh_v2_boosted_base_1024.json -s /hhh-vol/search_space_files/hidden_dim.json -g 1 -e 100 -t 20 -l /tune -n job_4gpu_4concur_test
+          volumeMounts:
+            - name: dshm
+              mountPath: /dev/shm
+            - mountPath: /hhh-vol
+              name: hhh-vol
+            - name: tune
+              mountPath: /tune
+          resources:
+            limits:
+              memory: 32Gi
+              cpu: "8"
+              nvidia.com/gpu: "4"
+              ephemeral-storage: 50Gi
+            requests:
+              memory: 32Gi
+              cpu: "8"
+              nvidia.com/gpu: "4"
+              ephemeral-storage: 50Gi
+      volumes:
+        - name: dshm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 32Gi
+        - name: tune
+          emptyDir: {}
+        - name: hhh-vol
+          persistentVolumeClaim:
+            claimName: hhh-vol
+      restartPolicy: Never
+  backoffLimit: 5

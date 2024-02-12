@@ -11,13 +11,18 @@ spec:
         nodeSelectorTerms:
         - matchExpressions:
           - key: nvidia.com/gpu.product
-            operator: In
+            operator: NotIn
             values:
-            - NVIDIA-GeForce-RTX-3090
+            - NVIDIA-A100-80GB-PCIe-MIG-1g.10gb
   containers:
   - name: container
-    image: gitlab-registry.nrp-nautilus.io/billy000400/hhh:hparam
+    image: billy000400/hhh:latest
     command: 
+      - "conda"
+      - "run"
+      - "-n"
+      - "spanet"
+      - "--live-stream"
       - "/bin/bash"
       - "-c"
       - >
@@ -27,7 +32,7 @@ spec:
        git clone https://github.com/billy000400/vim &&
        cp vim/.vimrc ~/. && 
        vi +PlugInstall +PluginInstall +qall &&
-       sleep 36500000
+       sleep 360000
     resources:
       limits:
         memory: 32Gi

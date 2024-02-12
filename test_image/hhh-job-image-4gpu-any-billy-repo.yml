@@ -1,0 +1,65 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: hhh-job-billy-test-image-4gpu-2cpu
+  labels:
+    jobgroup: hhh-job-train
+spec:
+  template:
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: nvidia.com/gpu.product
+                operator: NotIn
+                values:
+                - NVIDIA-A100-80GB-PCIe-MIG-1g.10gb
+      containers:
+        - name: training
+          image: billy000400/hhh:latest 
+          command:
+            - "conda"
+            - "run"
+            - "-n"
+            - "spanet"
+            - "--live-stream"
+            - "/bin/bash"
+            - "-c"
+            - >
+             git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim &&
+             mkdir -p ~/.vim/autoload/ &&
+             wget -O ~/.vim/autoload/plug.vim https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim &&
+             git clone https://github.com/billy000400/vim &&
+             cp vim/.vimrc ~/. && 
+             vi +PlugInstall +PluginInstall +qall &&
+             pip uninstall -y spanet &&
+             git clone https://github.com/billy000400/SPANet &&
+             cd SPANet &&
+             pip install . &&
+             python -m spanet.tune /hhh-vol/options_files/delphes/hhh_v2_boosted_base.json -s /hhh-vol/search_space_files/hidden_dim.json -c 2 -g 1 -e 100 -t 20 -l /hhh-vol/tune/test -n job_8cpu_4gpu
+          volumeMounts:
+            - name: dshm
+              mountPath: /dev/shm
+            - mountPath: /hhh-vol
+              name: hhh-vol
+          resources:
+            limits:
+              memory: 32Gi
+              cpu: "12"
+              nvidia.com/gpu: "4"
+            requests:
+              memory: 32Gi
+              cpu: "12"
+              nvidia.com/gpu: "4"
+      volumes:
+        - name: dshm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 32Gi
+        - name: hhh-vol
+          persistentVolumeClaim:
+            claimName: hhh-vol
+      restartPolicy: Never
+  backoffLimit: 5
