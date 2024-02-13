@@ -36,11 +36,11 @@ spec:
     resources:
       limits:
         memory: 32Gi
-        cpu: "8"
+        cpu: "16"
         nvidia.com/gpu: "2"
       requests:
         memory: 32Gi
-        cpu: "8"
+        cpu: "16"
         nvidia.com/gpu: "2"
     volumeMounts:
     - mountPath: /hhh-vol
