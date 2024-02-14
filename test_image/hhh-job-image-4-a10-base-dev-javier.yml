@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: hhh-job-billy-test-image-4gpu-any-dev
+  name: hhh-job-billy-test-image-4-a10-base-dev-javier
   labels:
     jobgroup: hhh-job-train
 spec:
@@ -13,12 +13,12 @@ spec:
             nodeSelectorTerms:
             - matchExpressions:
               - key: nvidia.com/gpu.product
-                operator: NotIn
+                operator: In
                 values:
-                - NVIDIA-A100-80GB-PCIe-MIG-1g.10gb
+                - NVIDIA-A10
       containers:
         - name: training
-          image: billy000400/hhh:latest 
+          image: gitlab-registry.nrp-nautilus.io/jmduarte/hhh:latest
           command:
             - "conda"
             - "run"
@@ -34,11 +34,11 @@ spec:
              git clone https://github.com/billy000400/vim &&
              cp vim/.vimrc ~/. && 
              vi +PlugInstall +PluginInstall +qall &&
-             pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118 &&
-             pip install pytorch_lightning ray[tune] ray[train] hyperopt &&
-             git clone https://github.com/billy000400/SPANet &&
+             pip install ray[tune] ray[train] hyperopt &&
+             git clone https://github.com/Alexanders101/SPANet &&
              cd SPANet &&
-             sleep 7d &&
+             pip install . &&
+             sleep 7d
           volumeMounts:
             - name: dshm
               mountPath: /dev/shm
@@ -46,18 +46,18 @@ spec:
               name: hhh-vol
           resources:
             limits:
-              memory: 32Gi
-              cpu: "40"
+              memory: 48Gi
+              cpu: "26"
               nvidia.com/gpu: "4"
             requests:
-              memory: 32Gi
-              cpu: "40"
+              memory: 48Gi
+              cpu: "26"
               nvidia.com/gpu: "4"
       volumes:
         - name: dshm
           emptyDir:
             medium: Memory
-            sizeLimit: 16Gi
+            sizeLimit: 32Gi
         - name: hhh-vol
           persistentVolumeClaim:
             claimName: hhh-vol

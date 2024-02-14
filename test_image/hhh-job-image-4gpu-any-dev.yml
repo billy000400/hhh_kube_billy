@@ -38,7 +38,7 @@ spec:
              pip install pytorch_lightning ray[tune] ray[train] hyperopt &&
              git clone https://github.com/billy000400/SPANet &&
              cd SPANet &&
-             sleep 7d &&
+             sleep 7d
           volumeMounts:
             - name: dshm
               mountPath: /dev/shm
@@ -46,11 +46,11 @@ spec:
               name: hhh-vol
           resources:
             limits:
-              memory: 32Gi
+              memory: 64Gi
               cpu: "40"
               nvidia.com/gpu: "4"
             requests:
-              memory: 32Gi
+              memory: 64Gi
               cpu: "40"
               nvidia.com/gpu: "4"
       volumes:
