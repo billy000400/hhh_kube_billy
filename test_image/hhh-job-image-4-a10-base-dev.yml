@@ -18,13 +18,8 @@ spec:
                 - NVIDIA-A10
       containers:
         - name: training
-          image: billy000400/hhh:latest 
+          image: gitlab-registry.nrp-nautilus.io/jmduarte/hhh:latest
           command:
-            - "conda"
-            - "run"
-            - "-n"
-            - "base"
-            - "--live-stream"
             - "/bin/bash"
             - "-c"
             - >
@@ -34,8 +29,7 @@ spec:
              git clone https://github.com/billy000400/vim &&
              cp vim/.vimrc ~/. && 
              vi +PlugInstall +PluginInstall +qall &&
-             pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118 &&
-             pip install pytorch_lightning ray[tune] ray[train] hyperopt &&
+             pip install ray[tune] ray[train] hyperopt &&
              git clone https://github.com/billy000400/SPANet &&
              cd SPANet &&
              pip install . &&
@@ -47,12 +41,12 @@ spec:
               name: hhh-vol
           resources:
             limits:
-              memory: 64Gi
-              cpu: "40"
+              memory: 48Gi
+              cpu: "26"
               nvidia.com/gpu: "4"
             requests:
-              memory: 64Gi
-              cpu: "40"
+              memory: 48Gi
+              cpu: "26"
               nvidia.com/gpu: "4"
       volumes:
         - name: dshm
