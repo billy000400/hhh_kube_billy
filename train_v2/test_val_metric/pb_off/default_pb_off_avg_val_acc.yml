@@ -1,0 +1,71 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: hhh-job-train-bv2-billy-pb-off-avg-val-acc
+  labels:
+    jobgroup: hhh-job-train
+spec:
+  template:
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: nvidia.com/gpu.product  
+                operator: In
+                values:
+                - NVIDIA-GeForce-RTX-3090
+
+      containers:
+        - name: training
+          image: gitlab-registry.nrp-nautilus.io/jmduarte/hhh:latest
+          command: ["/bin/sh","-c"]
+          args:
+            - cp -r /opt/repo/SPANet . &&
+              cd SPANet &&
+              pip install -e . &&
+              cd /hhh-vol &&
+              python -m spanet.train -of /hhh-vol/options_files/delphes/benchmark/default/pb_off.json -l /hhh-vol/logs/test_val_metric/ -n default_pb_off_avg_val_acc --epochs 2000 --gpus 1 --batch_size 4096
+          volumeMounts:
+            - name: dshm
+              mountPath: /dev/shm
+            - mountPath: /hhh-vol
+              name: hhh-vol
+            - name: git-repo
+              mountPath: /opt/repo
+          resources:
+            limits:
+              memory: 32Gi
+              cpu: "8"
+              nvidia.com/gpu: "1"
+            requests:
+              memory: 32Gi
+              cpu: "8"
+              nvidia.com/gpu: "1"
+      initContainers:
+        - name: init-clone-repo
+          image: alpine/git
+          args:
+            - clone
+            - --single-branch
+            - https://github.com/billy000400/SPANet
+            - -b
+            - balance_acc
+            - --recurse-submodules
+            - /opt/repo/SPANet
+          volumeMounts:
+            - name: git-repo
+              mountPath: /opt/repo
+      volumes:
+        - name: dshm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 16Gi
+        - name: git-repo
+          emptyDir: {}
+        - name: hhh-vol
+          persistentVolumeClaim:
+            claimName: hhh-vol
+      restartPolicy: Never
+  backoffLimit: 5

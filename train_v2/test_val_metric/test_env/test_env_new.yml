@@ -1,0 +1,75 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: hhh-job-billy-test-env-new-image
+  labels:
+    jobgroup: hhh-job-train
+spec:
+  template:
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                - k8s-a100-01.suncorridor.org 
+
+      containers:
+        - name: training
+          image: gitlab-registry.nrp-nautilus.io/nrp/scientific-images/python:52024b8a
+          command:
+            - "/bin/bash"
+            - "-c"
+            - >
+             git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim &&
+             curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim &&
+             git clone https://github.com/billy000400/vim &&
+             cp vim/.vimrc ~/. && 
+             vi +PlugInstall +PluginInstall +qall &&
+              cp -r /opt/repo/SPANet . && 
+              sleep 48h
+          volumeMounts:
+            - name: dshm
+              mountPath: /dev/shm
+            - mountPath: /hhh-vol
+              name: hhh-vol
+            - name: git-repo
+              mountPath: /opt/repo
+          resources:
+            limits:
+              memory: 16Gi
+              cpu: "16"
+              nvidia.com/gpu: "2"
+            requests:
+              memory: 16Gi
+              cpu: "16"
+              nvidia.com/gpu: "2"
+      initContainers:
+        - name: init-clone-repo
+          image: alpine/git
+          args:
+            - clone
+            - --single-branch
+            - https://github.com/billy000400/SPANet
+            - -b
+            - new_balance_acc 
+            - --recurse-submodules
+            - /opt/repo/SPANet
+          volumeMounts:
+            - name: git-repo
+              mountPath: /opt/repo
+      volumes:
+        - name: dshm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 16Gi
+        - name: git-repo
+          emptyDir: {}
+        - name: hhh-vol
+          persistentVolumeClaim:
+            claimName: hhh-vol
+      restartPolicy: Never
+  backoffLimit: 10

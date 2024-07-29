@@ -1,0 +1,84 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: hhh-bl-job-train-hhh-all-embed64-lr-5e-4
+  labels:
+    jobgroup: hhh-job-train
+spec:
+  parallelism: 5  # This line specifies that 5 pods should run in parallel
+  template:
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                - gpn-fiona-mizzou-2.rnet.missouri.edu
+                - gpengine-uams.areon.net
+                - rci-nrp-gpu-05.sdsu.edu
+                - node-2-2.sdsc.optiputer.net
+                - hcc-gpengine-shor-c5303.unl.edu
+                - node-1-3.sdsc.optiputer.net
+      containers:
+      - name: training
+        image: gitlab-registry.nrp-nautilus.io/nrp/scientific-images/python:52024b8a
+        command: ["/bin/sh","-c"]
+        args:
+          - cp -r /opt/repo/SPANet . &&
+            cd SPANet &&
+            pip install -e . &&
+            cd /hhh-vol &&
+            python -m spanet.train -of /hhh-vol/options_files/delphes/hhh_all/improve_v61_v6_lr_5e-4.json -l /hhh-vol/logs/hhh_all -n embed64_lr_5e-4 --epochs 4000 --gpus 1 --batch_size 4096
+        volumeMounts:
+          - name: dshm
+            mountPath: /dev/shm
+          - mountPath: /hhh-vol
+            name: hhh-vol
+          - name: git-repo
+            mountPath: /opt/repo
+        resources:
+          limits:
+            memory: 32Gi
+            cpu: "6"
+            nvidia.com/a100: "1"
+          requests:
+            memory: 32Gi
+            cpu: "6"
+            nvidia.com/a100: "1"
+      initContainers:
+      - name: init-clone-repo
+        image: alpine/git
+        args:
+          - clone
+          - --single-branch
+          - https://github.com/billy000400/SPANet
+          - -b
+          - new_balance_acc
+          - --recurse-submodules
+          - /opt/repo/SPANet
+        volumeMounts:
+          - name: git-repo
+            mountPath: /opt/repo
+        resources:
+          limits:
+            memory: 1Gi
+            cpu: "4"
+          requests:
+            memory: 1Gi
+            cpu: "4"
+      volumes:
+      - name: dshm
+        emptyDir:
+          medium: Memory
+          sizeLimit: 16Gi
+      - name: git-repo
+        emptyDir: {}
+      - name: hhh-vol
+        persistentVolumeClaim:
+          claimName: hhh-vol
+      restartPolicy: Never
+  backoffLimit: 5
+

@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: hhh-job-billy-test-image-4-a10-base-dev
+  name: hhh-job-train-bi-input-billy-4gpu
   labels:
     jobgroup: hhh-job-train
 spec:
@@ -15,40 +15,51 @@ spec:
               - key: nvidia.com/gpu.product
                 operator: In
                 values:
-                - NVIDIA-A10
+                - NVIDIA-GeForce-RTX-3090
       containers:
         - name: training
           image: gitlab-registry.nrp-nautilus.io/jmduarte/hhh:latest
-          command:
-            - "/bin/bash"
-            - "-c"
-            - >
-             git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim &&
-             mkdir -p ~/.vim/autoload/ &&
-             wget -O ~/.vim/autoload/plug.vim https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim &&
-             git clone https://github.com/billy000400/vim &&
-             cp vim/.vimrc ~/. && 
-             vi +PlugInstall +PluginInstall +qall &&
-             sleep 7d
+          command: ["/bin/sh","-c"]
+          args:
+            - cd /hhh-vol &&
+              python -m spanet.train -of options_files/delphes/hhh_v2_boosted_bi_input.json -l /hhh-vol/logs/ -n bv2_bi_input --epochs 2000 --gpus 4 --batch_size 4096
           volumeMounts:
             - name: dshm
               mountPath: /dev/shm
             - mountPath: /hhh-vol
               name: hhh-vol
+            - name: git-repo
+              mountPath: /opt/repo
           resources:
             limits:
-              memory: 48Gi
-              cpu: "26"
+              memory: 32Gi
+              cpu: "8"
               nvidia.com/gpu: "4"
             requests:
-              memory: 48Gi
-              cpu: "26"
+              memory: 32Gi
+              cpu: "8"
               nvidia.com/gpu: "4"
+      initContainers:
+        - name: init-clone-repo
+          image: alpine/git
+          args:
+            - clone
+            - --single-branch
+            - https://github.com/ucsd-hep-ex/hhh
+            - -b
+            - main
+            - --recurse-submodules
+            - /opt/repo/hhh
+          volumeMounts:
+            - name: git-repo
+              mountPath: /opt/repo
       volumes:
         - name: dshm
           emptyDir:
             medium: Memory
-            sizeLimit: 32Gi
+            sizeLimit: 8Gi
+        - name: git-repo
+          emptyDir: {}
         - name: hhh-vol
           persistentVolumeClaim:
             claimName: hhh-vol

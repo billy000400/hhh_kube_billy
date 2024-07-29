@@ -1,0 +1,38 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: hhh-job-data-billy
+  labels:
+    jobgroup: hhh-job-test
+spec:
+  template:
+    spec:
+      containers:
+      - name: testing
+        image: gitlab-registry.nrp-nautilus.io/jmduarte/hhh:latest
+        command:
+          - "/bin/bash"
+          - "-c"
+          - >
+            sleep 48h
+        resources:
+          limits:
+            memory: 8Gi
+            cpu: "4"
+          requests:
+            memory: 8Gi
+            cpu: "4"
+        volumeMounts:
+        - mountPath: /hhh-data-vol
+          name: hhh-data-vol
+        - mountPath: /hhh-vol
+          name: hhh-vol
+      volumes:
+      - name: hhh-data-vol
+        persistentVolumeClaim:
+          claimName: hhh-data-vol
+      - name: hhh-vol
+        persistentVolumeClaim:
+          claimName: hhh-vol
+      restartPolicy: Never
+  backoffLimit: 5

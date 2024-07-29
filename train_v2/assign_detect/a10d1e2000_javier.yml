@@ -1,0 +1,79 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: hhh-job-train-billy-assign-10-detect-1-epoch-2000
+  labels:
+    jobgroup: hhh-job-train
+spec:
+  template:
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: nvidia.com/gpu.product  
+                operator: In
+                values:
+                - NVIDIA-GeForce-RTX-3090
+                - NVIDIA-RTX-A6000
+                - NVIDIA-A40
+
+      containers:
+        - name: training
+          image: gitlab-registry.nrp-nautilus.io/jmduarte/hhh:latest
+          command:
+            - "/bin/bash"
+            - "-c"
+            - >
+              cp -r /opt/repo/SPANet . &&
+              cd SPANet &&
+              pip install -e . &&
+              cd /hhh-vol &&
+              sudo chmod 777 -R /hhh-vol/logs/balance_assign_detect/ &&
+              export NCCL_DEBUG=INFO &&
+              export NCCL_DEBUG_SUBSYS=ALL &&
+              export TORCH_DISTRIBUTED_DEBUG=INFO &&
+              python -m spanet.train -of /hhh-vol/options_files/delphes/balance_assign_detect/assign_10_detect_1.json -l /hhh-vol/logs/balance_assign_detect/ -n assign_10_detect_1_epoch --epochs 2000 --gpus 4 --batch_size 4096
+          volumeMounts:
+            - name: dshm
+              mountPath: /dev/shm
+            - mountPath: /hhh-vol
+              name: hhh-vol
+            - name: git-repo
+              mountPath: /opt/repo
+          resources:
+            limits:
+              memory: 32Gi
+              cpu: "8"
+              nvidia.com/gpu: "4"
+            requests:
+              memory: 32Gi
+              cpu: "8"
+              nvidia.com/gpu: "4"
+      initContainers:
+        - name: init-clone-repo
+          image: alpine/git
+          args:
+            - clone
+            - --single-branch
+            - https://github.com/billy000400/SPANet
+            - -b
+            - master 
+            - --recurse-submodules
+            - /opt/repo/SPANet
+          volumeMounts:
+            - name: git-repo
+              mountPath: /opt/repo
+      volumes:
+        - name: dshm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 16Gi
+        - name: git-repo
+          emptyDir: {}
+        - name: hhh-vol
+          persistentVolumeClaim:
+            claimName: hhh-vol
+      restartPolicy: Never
+  backoffLimit: 5

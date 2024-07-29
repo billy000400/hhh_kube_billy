@@ -1,0 +1,32 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: hhh-bl-monitor-weighted-training
+  labels:
+    jobgroup: hhh-job-train
+spec:
+  template:
+    spec:
+      containers:
+      - name: training
+        image: gitlab-registry.nrp-nautilus.io/nrp/scientific-images/python:52024b8a
+        command: ["/bin/sh","-c"]
+        args:
+          - tensorboard --logdir /hhh-vol/logs/hhh_all/weighted_training
+        volumeMounts:
+          - mountPath: /hhh-vol
+            name: hhh-vol
+        resources:
+          limits:
+            memory: 1Gi 
+            cpu: "1"
+          requests:
+            memory: 1Gi 
+            cpu: "1"
+      volumes:
+      - name: hhh-vol
+        persistentVolumeClaim:
+          claimName: hhh-vol
+      restartPolicy: Never
+  backoffLimit: 5
+

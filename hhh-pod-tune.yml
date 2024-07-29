@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: hhh-pod-billy-2gpu
+  name: hhh-tune-pod-billy
   labels:
     app: hhh
 spec:
@@ -24,28 +24,33 @@ spec:
        git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim &&
        curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim &&
        git clone https://github.com/billy000400/vim &&
-       cp vim/.vimrc . && 
+       cp vim/.vimrc ~/. && 
        vi +PlugInstall +PluginInstall +qall &&
        sleep 36500000
     resources:
       limits:
-        memory: 64Gi
-        cpu: "16"
-        nvidia.com/gpu: "2"
+        memory: 32Gi
+        cpu: "8"
+        nvidia.com/gpu: "1"
       requests:
-        memory: 64Gi
-        cpu: "16"
-        nvidia.com/gpu: "2"
+        memory: 32Gi
+        cpu: "8"
+        nvidia.com/gpu: "1"
     volumeMounts:
+    - mountPath: /hhh-tune-vol
+      name: hhh-tune-vol
     - mountPath: /hhh-vol
       name: hhh-vol
     - mountPath: /dev/shm
       name: dshm
   volumes:
+    - name: hhh-tune-vol
+      persistentVolumeClaim:
+        claimName: hhh-tune-vol
     - name: hhh-vol
       persistentVolumeClaim:
         claimName: hhh-vol
     - name: dshm
       emptyDir:
         medium: Memory
-        sizeLimit: 16Gi
+        sizeLimit: 8Gi

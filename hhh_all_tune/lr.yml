@@ -1,0 +1,79 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: hhh-job-tune-bl-tune-lr-by-new-val-acc
+  labels:
+    jobgroup: hhh-job-train
+spec:
+  template:
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: nvidia.com/gpu.product
+                operator: In
+                values:
+                - NVIDIA-A10
+                - NVIDIA-GeForce-RTX-3090
+                - NVIDIA-GeForce-RTX-4090
+                - NVIDIA-TITAN-RTX
+                - NVIDIA-RTX-A5000
+                - Quadro-RTX-6000
+                - Tesla-V100-SXM2-32GB
+                - NVIDIA-A40
+                - NVIDIA-RTX-A6000
+                - Quadro-RTX-8000
+      containers:
+        - name: training
+          image: gitlab-registry.nrp-nautilus.io/jmduarte/hhh:latest
+          command: ["/bin/sh","-c"]
+          args:
+            - cp -r /opt/repo/SPANet . &&
+              cd SPANet &&
+              pip install -e . &&
+              cd /hhh-tune-vol &&
+              python -m spanet.tune /hhh-tune-vol/options_files/delphes/hhh_all/lr.json -s /hhh-tune-vol/search_space_files/hhh_all/lr.json -g 1 -c 5 -e 6 -t 100 -l /hhh-tune-vol/tune_hhh_all -n learning_rate
+          volumeMounts:
+            - name: dshm
+              mountPath: /dev/shm
+            - mountPath: /hhh-tune-vol
+              name: hhh-tune-vol
+            - name: git-repo
+              mountPath: /opt/repo
+          resources:
+            limits:
+              memory: 64Gi
+              cpu: "26"
+              nvidia.com/gpu: "4"
+            requests:
+              memory: 64Gi
+              cpu: "26"
+              nvidia.com/gpu: "4"
+      initContainers:
+        - name: init-clone-repo
+          image: alpine/git
+          args:
+            - clone
+            - --single-branch
+            - https://github.com/billy000400/SPANet
+            - -b
+            - new_balance_acc 
+            - --recurse-submodules
+            - /opt/repo/SPANet
+          volumeMounts:
+            - name: git-repo
+              mountPath: /opt/repo
+      volumes:
+        - name: dshm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 32Gi
+        - name: git-repo
+          emptyDir: {}
+        - name: hhh-tune-vol
+          persistentVolumeClaim:
+            claimName: hhh-tune-vol
+      restartPolicy: Never
+  backoffLimit: 5

@@ -1,0 +1,83 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: hhh-job-test-env-billy-billy000400
+  labels:
+    jobgroup: hhh-job-train
+spec:
+  template:
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: nvidia.com/gpu.product  
+                operator: In
+                values:
+                - NVIDIA-GeForce-RTX-3090
+
+      containers:
+        - name: training
+          image: billy000400/hhh:latest
+          command:
+            - "conda"
+            - "run"
+            - "-n"
+            - "spanet"
+            - "--live-stream"
+            - "/bin/bash"
+            - "-c"
+            - >
+             git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim &&
+             curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim &&
+             git clone https://github.com/billy000400/vim &&
+             cp vim/.vimrc ~/. && 
+             vi +PlugInstall +PluginInstall +qall &&
+              cp -r /opt/repo/SPANet . &&
+              cd SPANet &&
+              pip install -e . &&
+              cd /hhh-vol &&
+              sleep 48h
+          volumeMounts:
+            - name: dshm
+              mountPath: /dev/shm
+            - mountPath: /hhh-vol
+              name: hhh-vol
+            - name: git-repo
+              mountPath: /opt/repo
+          resources:
+            limits:
+              memory: 32Gi
+              cpu: "8"
+              nvidia.com/gpu: "4"
+            requests:
+              memory: 32Gi
+              cpu: "8"
+              nvidia.com/gpu: "4"
+      initContainers:
+        - name: init-clone-repo
+          image: alpine/git
+          args:
+            - clone
+            - --single-branch
+            - https://github.com/billy000400/SPANet
+            - -b
+            - master 
+            - --recurse-submodules
+            - /opt/repo/SPANet
+          volumeMounts:
+            - name: git-repo
+              mountPath: /opt/repo
+      volumes:
+        - name: dshm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 16Gi
+        - name: git-repo
+          emptyDir: {}
+        - name: hhh-vol
+          persistentVolumeClaim:
+            claimName: hhh-vol
+      restartPolicy: Never
+  backoffLimit: 5

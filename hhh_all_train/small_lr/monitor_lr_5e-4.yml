@@ -1,0 +1,32 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: hhh-bl-job-train-hhh-all-lr-5e-4-monitor
+  labels:
+    jobgroup: hhh-job-train
+spec:
+  template:
+    spec:
+      containers:
+      - name: training
+        image: gitlab-registry.nrp-nautilus.io/nrp/scientific-images/python:52024b8a
+        command: ["/bin/sh","-c"]
+        args:
+          - tensorboard --logdir /hhh-vol/logs/hhh_all/embed64_lr_5e-4
+        volumeMounts:
+          - mountPath: /hhh-vol
+            name: hhh-vol
+        resources:
+          limits:
+            memory: 4Gi 
+            cpu: "4"
+          requests:
+            memory: 4Gi 
+            cpu: "4"
+      volumes:
+      - name: hhh-vol
+        persistentVolumeClaim:
+          claimName: hhh-vol
+      restartPolicy: Never
+  backoffLimit: 5
+
